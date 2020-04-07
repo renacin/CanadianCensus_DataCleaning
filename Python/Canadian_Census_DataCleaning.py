@@ -105,6 +105,11 @@ def reorg_df(in_path, out_path):
 Fill In Missing Data | Which Methodology Works Best?
 1). Mean, Median, or Mode | Median Best Of Three, But Still Not As Accurate
 2). Nearest neighbour Fill?
+
+THINGS TO DO:
+    + How Do I beat Random Rounding?
+        - Create a neural network that can predict counts based on other fields
+        - DO NOT USE NaN counts
 """
 def fill_df(in_path, out_path):
     df = pd.read_csv(in_path, low_memory=False)
@@ -137,6 +142,6 @@ if __name__ == "__main__":
     #
     # reorg_df(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Data\Step_2_CensusData.csv",
     #          r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Data\Step_3_CensusData.csv")
-    
+
     fill_df(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Data\Step_3_CensusData.csv",
              r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Data\Step_4_CensusData.csv")
