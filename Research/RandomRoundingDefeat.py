@@ -45,7 +45,25 @@ def create_data(num_points):
 
         y_2.append(y_new)
 
+    return x, y_1, y_2
+
+
+"""
+Create Data For Random Rounding Research
+    + Create a dataset, introduce an acceptable amount of noise into both variables
+"""
+def calc_stats(y_1, y_2):
+
+    # Calc Difference Between Points
+    sum_diff = 0
+    for y1, y2 in zip(y_1, y_2):
+
+        diff = abs(y1 - y2)
+        sum_diff += diff
+
+
     # Print General Statistics
+
     print("---ORIGINAL DATA---")
     print("Average: {}".format(np.average(y_1)))
     print("Standard Deviation: {}".format(np.std(y_1)))
@@ -53,8 +71,8 @@ def create_data(num_points):
     print("---ROUNDED DATA---")
     print("Average: {}".format(np.average(y_2)))
     print("Standard Deviation: {}".format(np.std(y_1)))
+    print("Difference B/W Org & RR:{}".format(sum_diff))
 
-    return x, y_1, y_2
 
 """
 Plot Data
@@ -63,7 +81,7 @@ def plot_data(x1, y1, y2):
 
     plt.subplot(1, 2, 1)
     plt.scatter(x1, y1)
-    plt.title('Original & Random Rounded Data')
+    plt.title('Original & Random Rounded Data', loc='center')
     plt.ylabel('Original')
 
 
@@ -77,5 +95,7 @@ def plot_data(x1, y1, y2):
 
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
+    
     x_1, y_1, y_2 = create_data(100)
+    calc_stats(y_1, y_2)
     plot_data(x_1, y_1, y_2)
