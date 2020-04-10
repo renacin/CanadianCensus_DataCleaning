@@ -49,7 +49,7 @@ def create_data(num_points):
 
 
 """
-Create Data For Random Rounding Research
+Basic Analysis Of Different Datasets
     + Create a dataset, introduce an acceptable amount of noise into both variables
 """
 def calc_stats(y_1, y_2):
@@ -95,7 +95,7 @@ def plot_data(x1, y1, y2):
 
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    
+
     x_1, y_1, y_2 = create_data(100)
     calc_stats(y_1, y_2)
     plot_data(x_1, y_1, y_2)
