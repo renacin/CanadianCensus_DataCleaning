@@ -17,7 +17,7 @@ Notes:
     + The larger the roiunding base the larger the effect on the mean, and standard deviation
     + From this experiment we can surmise that randon rounding (with cosideration to rounding bases of 5, or 10) has a
         large influence on smaller census observations
-    +
+    + Use Numpy Arrays. Much Faster And Designed For This Kind Of Work
 
 """
 # ----------------------------------------------------------------------------------------------------------------------
@@ -27,9 +27,10 @@ Create Data For Random Rounding Research
     + Create a dataset, introduce an acceptable amount of noise into both variables
 """
 def create_data(num_points):
+
     # [1.] Create X & Y Variables
-    x = [random.uniform(50, 1000) for x in range(num_points)]
-    y_1 = [((6.5 * x) + random.uniform(0, 25)) for x in x]
+    x = np.random.uniform(low=50, high=1000, size=(num_points,))
+    y_1 = (6.5 * x) + np.random.uniform(low=0, high=100, size=(1,))
 
     # [2.] Randomly Round Y Variables
     rounding_var = random.uniform(0, 1)
@@ -46,6 +47,11 @@ def create_data(num_points):
 
         y_2.append(y_new)
 
+    y_2 = np.array(y_2)
+
+    y_1 = y_1.reshape(-1, 1)
+    y_2 = y_2.reshape(-1, 1)
+
     return x, y_1, y_2
 
 
@@ -55,26 +61,22 @@ Predict Original Values Based On Randomly Rounded Data
 """
 def predict(x_1, y_2):
 
-    #[1.] Create A Dataset To Work From
-    raw_data = pd.DataFrame({'X': x_1, 'Y': y_2})
-    dataset = raw_data.copy()
+    # [1.] Reshape Array
+    x_1 = x_1.reshape(-1, 1)
 
-    #[2.] Split Data Into Test, Train | By X, Y
-    X = np.array(dataset['X']).reshape(-1, 1)
-    y = np.array(dataset['Y']).reshape(-1, 1)
+    # [2.] Split Data Into Training And Testing Sets
+    X_train, X_test, y_train, y_test = train_test_split(x_1, y_2, test_size = 0.25)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.25)
-
-
-    #[3.] Feed Data Into Linear Regression Model
+    # [3.] Feed Data Into Linear Regression Model
     regr = LinearRegression()
     regr.fit(X_train, y_train)
 
-    #[4.] Return List Of Predicted Values Based On Coefficients
+    # [4.] Return List Of Predicted Values Based On Coefficients
     m = regr.coef_[0]
     b = regr.intercept_
 
     y_3 = (x_1 * m) + b
+
     return y_3
 
 
@@ -86,19 +88,8 @@ Basic Analysis Of Different Datasets
 def calc_stats(y_1, y_2, y_3):
 
     # Calc Difference Between Y_1 & Y_2
-    sum_diff_1_2 = 0
-    for y1, y2 in zip(y_1, y_2):
-
-        diff = abs(y1 - y2)
-        sum_diff_1_2 += diff
-
-    # Calc Difference Between Y_1 & Y_3
-    sum_diff_1_3 = 0
-    for y1, y3 in zip(y_1, y_3):
-
-        diff = abs(y1 - y3)
-        sum_diff_1_3 += diff
-
+    sum_diff_1_2 = sum(abs(y_1 - y_2))
+    sum_diff_1_3 = sum(abs(y_1 - y_3))
 
     # Print General Statistics
 
@@ -141,7 +132,7 @@ def plot_data(x1, y1, y2, y3):
 Export Data
 """
 def export_data(x1, y1, y2, y3):
-    df = pd.DataFrame({'X': x1, 'Y_1': y1, 'Y_2': y2, 'Y_3': y3})
+    df = pd.DataFrame({'X': x1.tolist(), 'Y_1': y1.tolist(), 'Y_2': y2.tolist(), 'Y_3': y3.tolist()})
     df.to_csv(r"C:\Users\renac\Desktop\RandomRoundingDefeat.csv", index=False)
 
 
