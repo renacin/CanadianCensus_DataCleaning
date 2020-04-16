@@ -25,3 +25,15 @@ def matrix_math():
     inv_b = np.linalg.inv(mat_b)
     mul_ab = np.matmul(mat_a, inv_b)
     print(mul_ab)
+
+
+"""
+    cv2.imwrite(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Research\Images\Red_Channel_Image.jpg",
+                red_matrix)
+    print(im.shape)
+
+    leftside_values.nbytes
+
+
+
+"""
