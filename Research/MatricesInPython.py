@@ -8,6 +8,7 @@ import cv2
 import pandas as pd
 import numpy as np
 import math
+import time
 # ----------------------------------------------------------------------------------------------------------------------
 """
 Notes:
@@ -25,7 +26,9 @@ Notes:
 
 def add_pixel_border(img):
 
+    # Rename As Matrix | Create A Temp That Will Store Data
     matrix_ = img
+    empty_matrix = np.full_like(matrix_, 0)
 
     # Grab Extra Left Right Values
     leftside_values = (matrix_[:, 0]).reshape(-1, 1)
@@ -43,19 +46,73 @@ def add_pixel_border(img):
     newArrLRT = np.vstack((top_values, newArr_LR))
     newArrLRTB = np.vstack((newArrLRT, bottom_values))
 
+    # Write Image
+    cv2.imwrite(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Research\Images\PlusPixel_Image.jpg", newArrLRTB)
+
     # Debugging
-    print(newArrLRTB.shape)
+    return newArrLRTB, empty_matrix
+
+def conv_matrix(empty_matrix, matx):
+
+    # Make A Copy Of The Empty Matrix
+    emp_mat = empty_matrix.copy()
+
+    # Define Convolution Kernel
+    edge_matrix = np.array([[-1, -1, -1],
+                            [-1, 8, -1],
+                            [-1, -1, -1]])
+
+    # Dimensions Of Original Image
+    org_dim_l = empty_matrix.shape[0]
+    org_dim_w = empty_matrix.shape[1]
+
+    # Dimensions Of Original Image
+    set_dim_l = matx.shape[0]
+    set_dim_w = matx.shape[1]
+
+    # Define Upper And Lower For Loop
+    x_upper = 3
+    y_upper = 3
+
+    x_lower = 0
+    y_lower = 0
+
+    # For Loop, Do Matrix Convolution
+    # for y in range(org_dim_l):
+
+    for x in range(org_dim_w):
+        # Define Subset Matrix
+        data_mat = matx[x_lower:x_upper, y_lower:y_upper]
+        #
+        #
+        # # Do Calculation
+        # sum_val = np.sum((data_mat * edge_matrix))
+        #
+        # # Append To New Matrix
+        # emp_mat[y, x] = sum_val
+
+        print("Row 1, Column {}".format(x + 1) )
+        print(x_lower, x_upper, y_lower, y_upper)
+        print(data_mat)
+        print("\n")
+
+        del data_mat
+
+        y_upper += 1
+        y_lower += 1
+
+        # x_upper += 1
+        # y_upper += 1
 
 
-def image_processing():
-    # Open Image As Numpy Array | OpenCV Does This Natively
-    im = cv2.imread(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Research\Images\Image.jpg")
-
-    # Grab Only Red Channel Values
-    matrix_ = im[:, :, 1]
-    add_pixel_border(matrix_)
 
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    # matrix_math()
-    image_processing()
+
+    # Open Image As Numpy Array | OpenCV Does This Natively
+    im = cv2.imread(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Research\Images\Image.jpg")
+
+    # Grab Only Blue Channel Values | Setup Matrix & Convolve With Kernel
+    image_ = im[:, :, 2]
+    setup_matrix, empty_matrix = add_pixel_border(image_)
+    conv_matrix(empty_matrix, setup_matrix)
