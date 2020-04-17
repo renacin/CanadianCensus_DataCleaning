@@ -58,9 +58,9 @@ def conv_matrix(empty_matrix, matx):
     emp_mat = empty_matrix.copy()
 
     # Define Convolution Kernel
-    edge_matrix = np.array([[-1, -1, -1],
-                            [-1, 8, -1],
-                            [-1, -1, -1]])
+    edge_matrix = np.array([[1, 1, 1],
+                            [1, 1, 1],
+                            [1, 1, 1]])
 
     # Dimensions Of Original Image
     org_dim_l = empty_matrix.shape[0]
@@ -72,37 +72,47 @@ def conv_matrix(empty_matrix, matx):
 
     # Define Upper And Lower For Loop
     x_upper = 3
-    y_upper = 3
-
     x_lower = 0
+
+    y_upper = 3
     y_lower = 0
 
     # For Loop, Do Matrix Convolution
-    # for y in range(org_dim_l):
+    for y in range(org_dim_l):
 
-    for x in range(org_dim_w):
-        # Define Subset Matrix
-        data_mat = matx[x_lower:x_upper, y_lower:y_upper]
-        #
-        #
-        # # Do Calculation
-        # sum_val = np.sum((data_mat * edge_matrix))
-        #
-        # # Append To New Matrix
-        # emp_mat[y, x] = sum_val
+        # Iterate Through Each Column For 3 Rows
+        for x in range(org_dim_w):
+            # Define Subset Matrix
+            data_mat = matx[x_lower:x_upper, y_lower:y_upper]
 
-        print("Row 1, Column {}".format(x + 1) )
-        print(x_lower, x_upper, y_lower, y_upper)
-        print(data_mat)
-        print("\n")
+            # Do Calculation
+            elem_mul = (data_mat * edge_matrix)
+            sum_val = np.sum(elem_mul)
 
-        del data_mat
+            # Append To New Matrix
+            emp_mat[y, x] = sum_val / 9
 
-        y_upper += 1
-        y_lower += 1
+            # Delete Data_Matrix, Keep Clean
+            del data_mat
 
-        # x_upper += 1
-        # y_upper += 1
+            # Move Onto Next Column
+            y_upper += 1
+            y_lower += 1
+
+        # Move Search One Row Down
+        x_upper += 1
+        x_lower += 1
+
+        # Reset Column Indices
+        y_upper = 3
+        y_lower = 0
+
+    # Write Image
+    cv2.imwrite(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Research\Images\Processed_Image.jpg", emp_mat)
+
+
+
+
 
 
 
