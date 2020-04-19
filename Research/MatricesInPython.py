@@ -13,7 +13,7 @@ def add_pixel_border(img):
 
     # Rename As Matrix | Create A Temp That Will Store Data
     matrix_ = img
-    empty_matrix = np.full_like(matrix_, 0, dtype="int16")
+    empty_matrix = np.full_like(matrix_, 0)
 
     # Grab Extra Left Right Values
     leftside_values = (matrix_[:, 0]).reshape(-1, 1)
@@ -43,29 +43,69 @@ def calc_value(data_mat, kernel_choice):
                         [1, 1, 1],
                         [1, 1, 1]], dtype="int16")
 
+        elem_mul = (data_mat * kern)
+        sum_val = (np.sum(elem_mul)) / 9
+
+    # Gaussian Blur
+    if kernel_choice == 2:
+        kern = np.array([[1, 2, 1],
+                        [2, 4, 2],
+                        [1, 2, 1]], dtype="int16")
+
+        elem_mul = (data_mat * kern)
+        sum_val = (np.sum(elem_mul)) / 16
+
     # Identity Matrix
-    elif kernel_choice == 2:
+    elif kernel_choice == 3:
         kern = np.array([[0, 0, 0],
                         [0, 1, 0],
                         [0, 0, 0]], dtype="int16")
 
-    # Laplacian Blur
-    elif kernel_choice == 3:
+        elem_mul = (data_mat * kern)
+        sum_val = np.sum(elem_mul)
+
+    # Laplacian Operator 1
+    elif kernel_choice == 4:
         kern = np.array([[-1, -1, -1],
                         [-1, 8, -1],
                         [-1, -1, -1]], dtype="int16")
 
+        elem_mul = (data_mat * kern)
+        sum_val = np.sum(elem_mul)
 
-    elem_mul = (data_mat * kern)
-    sum_val = np.sum(elem_mul)
+    # Laplacian Operator 2
+    elif kernel_choice == 5:
+        kern = np.array([[0, -1, 0],
+                        [-1, 4, -1],
+                        [0, -1, 0]], dtype="int16")
 
-    if kernel_choice == 1:
-        append_val = sum_val / 9
+        elem_mul = (data_mat * kern)
+        sum_val = np.sum(elem_mul)
 
-    else:
-        append_val = sum_val
 
-    return append_val
+
+
+    # Sobel X|Y Edge Detection
+    elif kernel_choice == 6:
+        kern_1 = np.array([[-1, -1, -1],
+                           [0, 0, 0],
+                           [1, 1, 1]])
+
+        kern_2 = np.array([[-1, 0, 1],
+                           [-1, 0, 1],
+                           [-1, 0, 1]])
+
+        # Calculate Seperatly, Then Square Add, Then Root Value
+        elem_mul_1 = (data_mat * kern_1)
+        # elem_mul_2 = (data_mat * kern_2)
+        #
+        # # Square Values In Array
+        # squared_array = np.square(elem_mul_1) + np.square(elem_mul_2)
+        # final_array = np.sqrt(squared_array)
+        sum_val = np.sum(elem_mul_1)
+
+
+    return sum_val
 
 
 def conv_matrix(empty_matrix, matx, kernel_choice):
@@ -105,7 +145,7 @@ def conv_matrix(empty_matrix, matx, kernel_choice):
         y_lower = 0
 
     # Write Image
-    cv2.imwrite(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Research\Images\Processed_Image.jpg", empty_matrix)
+    return empty_matrix
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -116,5 +156,18 @@ if __name__ == "__main__":
 
     # Grab Only Blue Channel Values | Setup Matrix & Convolve With Kernel
     image_ = im[:, :, 2]
+
+    # Setup Matrix
     setup_matrix, empty_matrix = add_pixel_border(image_)
-    conv_matrix(empty_matrix, setup_matrix, 3)
+
+    # Blur Image | Reduce Noise
+    for x in range(4):
+        if x == 0:
+            blurred_image = conv_matrix(empty_matrix, setup_matrix, 2)
+        else:
+            setup_matrix, empty_matrix = add_pixel_border(blurred_image)
+            blurred_image = conv_matrix(empty_matrix, setup_matrix, 2)
+
+    # Edge Detection Image
+    processed_image = conv_matrix(empty_matrix, setup_matrix, 4)
+    cv2.imwrite(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Research\Images\Processed_Image.jpg", processed_image)
