@@ -3,24 +3,9 @@
 # Title                                       Random Rounding Research
 #
 # ----------------------------------------------------------------------------------------------------------------------
-import matplotlib.pyplot as plt
 import cv2
 import pandas as pd
 import numpy as np
-import math
-import time
-# ----------------------------------------------------------------------------------------------------------------------
-"""
-Notes:
-    Revisiting Matrices In Python
-        + How Can We Manipulate A Matrix?
-            - Addition, Subtraction, Division, and Multiplication
-            - What is the inverse, determinant of a matrix?
-            - What are EigenValues, and EigenVectors? How can we use them?
-
-        + What Is Matrix Convolution?
-            - Mathematical process on two functions that produces a third
-"""
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -28,7 +13,7 @@ def add_pixel_border(img):
 
     # Rename As Matrix | Create A Temp That Will Store Data
     matrix_ = img
-    empty_matrix = np.full_like(matrix_, 0)
+    empty_matrix = np.full_like(matrix_, 0, dtype="int16")
 
     # Grab Extra Left Right Values
     leftside_values = (matrix_[:, 0]).reshape(-1, 1)
@@ -46,34 +31,52 @@ def add_pixel_border(img):
     newArrLRT = np.vstack((top_values, newArr_LR))
     newArrLRTB = np.vstack((newArrLRT, bottom_values))
 
-    # Write Image
-    cv2.imwrite(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Research\Images\PlusPixel_Image.jpg", newArrLRTB)
-
-    # Debugging
+    # Return Values
     return newArrLRTB, empty_matrix
 
-def conv_matrix(empty_matrix, matx):
 
-    # Make A Copy Of The Empty Matrix
-    emp_mat = empty_matrix.copy()
+def calc_value(data_mat, kernel_choice):
 
-    # Define Convolution Kernel
-    edge_matrix = np.array([[1, 1, 1],
-                            [1, 1, 1],
-                            [1, 1, 1]])
+    # Basic Blur
+    if kernel_choice == 1:
+        kern = np.array([[1, 1, 1],
+                        [1, 1, 1],
+                        [1, 1, 1]], dtype="int16")
+
+    # Identity Matrix
+    elif kernel_choice == 2:
+        kern = np.array([[0, 0, 0],
+                        [0, 1, 0],
+                        [0, 0, 0]], dtype="int16")
+
+    # Laplacian Blur
+    elif kernel_choice == 3:
+        kern = np.array([[-1, -1, -1],
+                        [-1, 8, -1],
+                        [-1, -1, -1]], dtype="int16")
+
+
+    elem_mul = (data_mat * kern)
+    sum_val = np.sum(elem_mul)
+
+    if kernel_choice == 1:
+        append_val = sum_val / 9
+
+    else:
+        append_val = sum_val
+
+    return append_val
+
+
+def conv_matrix(empty_matrix, matx, kernel_choice):
 
     # Dimensions Of Original Image
     org_dim_l = empty_matrix.shape[0]
     org_dim_w = empty_matrix.shape[1]
 
-    # Dimensions Of Original Image
-    set_dim_l = matx.shape[0]
-    set_dim_w = matx.shape[1]
-
     # Define Upper And Lower For Loop
     x_upper = 3
     x_lower = 0
-
     y_upper = 3
     y_lower = 0
 
@@ -82,18 +85,13 @@ def conv_matrix(empty_matrix, matx):
 
         # Iterate Through Each Column For 3 Rows
         for x in range(org_dim_w):
+
             # Define Subset Matrix
             data_mat = matx[x_lower:x_upper, y_lower:y_upper]
-
             # Do Calculation
-            elem_mul = (data_mat * edge_matrix)
-            sum_val = np.sum(elem_mul)
-
+            append_val = calc_value(data_mat, kernel_choice)
             # Append To New Matrix
-            emp_mat[y, x] = sum_val / 9
-
-            # Delete Data_Matrix, Keep Clean
-            del data_mat
+            empty_matrix[y, x] = append_val
 
             # Move Onto Next Column
             y_upper += 1
@@ -102,18 +100,12 @@ def conv_matrix(empty_matrix, matx):
         # Move Search One Row Down
         x_upper += 1
         x_lower += 1
-
         # Reset Column Indices
         y_upper = 3
         y_lower = 0
 
     # Write Image
-    cv2.imwrite(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Research\Images\Processed_Image.jpg", emp_mat)
-
-
-
-
-
+    cv2.imwrite(r"C:\Users\renac\Documents\Programming\Python\CanadianCensus_DataCleaning\Research\Images\Processed_Image.jpg", empty_matrix)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -125,4 +117,4 @@ if __name__ == "__main__":
     # Grab Only Blue Channel Values | Setup Matrix & Convolve With Kernel
     image_ = im[:, :, 2]
     setup_matrix, empty_matrix = add_pixel_border(image_)
-    conv_matrix(empty_matrix, setup_matrix)
+    conv_matrix(empty_matrix, setup_matrix, 3)
