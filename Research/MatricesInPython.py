@@ -161,7 +161,7 @@ if __name__ == "__main__":
     setup_matrix, empty_matrix = add_pixel_border(image_)
 
     # Blur Image | Reduce Noise
-    for x in range(4):
+    for x in range(8):
         if x == 0:
             blurred_image = conv_matrix(empty_matrix, setup_matrix, 2)
         else:
