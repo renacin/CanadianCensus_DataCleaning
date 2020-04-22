@@ -20,7 +20,7 @@ def process_image(image):
         im_small = cv2.resize(im, (0,0), fx= 1/scale_factor, fy= 1/scale_factor)
 
         # Remove Noise From Image | Must Be Bigger Than 3, & Support A Middle Origin Point | Uneven Numbers Only?
-        blur_kern_size = 5
+        blur_kern_size = 3
         img_blurred = cv2.GaussianBlur(im_small,(blur_kern_size, blur_kern_size), 0)
 
         # Calculate Edge Detection
