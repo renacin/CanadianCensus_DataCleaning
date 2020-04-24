@@ -4,50 +4,83 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 import cv2
-import pandas as pd
-import numpy as np
-import time
+import pytesseract
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+# Secondary Function, Clean Text Object Orientation Helps With Possible Frame Skipping Implementation
+def clean_text(in_text):
+
+    try:
+        raw_text = in_text.split(" ")
+
+        # Pull & Clean Inputs
+        date_ = raw_text[0]
+        time_ = raw_text[1]
+        latitude_ = float(raw_text[5].replace("W", ""))
+        longitude_ = float(raw_text[6].replace("N", ""))
+        speed_ = float(raw_text[7])
+
+    except:
+        date_ = "Error"
+        time_ = "Error"
+        latitude_ = "Error"
+        longitude_ = "Error"
+        speed_ = "Error"
+
+    return date_, time_, latitude_, longitude_, speed_
+
+
+# Main Function, Process Each Frame And Gather Data
 def process_video(video_path):
-    pass
+
     # Import Video
-    # cap = cv2.VideoCapture(video_path)
-    # ret, frame = cap.read()
-    #
-    # # Loop Through Each Frame
-    # while True:
-    #
-    #     # Initialize Individual Frame
-    #     ret, frame = cap.read()
-    #
-    #     # Convert To GrayScale | Grab Subsection
-    #     im_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #     frame_subsection = im_gray[1000:1080, 0:1200]
-    #
-    #     # Apply Threshold Function | Rescale
-    #     retval, threshold = cv2.threshold(frame_subsection, 155, 255, cv2.THRESH_BINARY)
-    #     scale_factor = 2
-    #     im_small = cv2.resize(threshold, (0,0), fx= 1/scale_factor, fy= 1/scale_factor)
-    #
-    #     # Display Frames
-    #     cv2.imshow('Original', frame)
-    #     cv2.imshow('Processed', im_small)
-    #
-    #     # time.sleep(1/30)
-    #
-    #     if cv2.waitKey(1) & 0xFF == ord('q') or ret==False :
-    #         cap.release()
-    #         cv2.destroyAllWindows()
-    #         break
+    cap = cv2.VideoCapture(video_path)
+    ret, frame = cap.read()
+
+    # Loop Through Each Frame
+    counter = 1
+    while True:
+
+        # Try To Gather Data From Frames
+        try:
+            # Initialize Individual Frame
+            ret, frame = cap.read()
+
+            # Convert To GrayScale | Grab Subsection
+            frame_subsection = frame[1025:1075, 15:1150, 1]
+
+            # Apply Threshold Function
+            retval, threshold = cv2.threshold(frame_subsection, 180, 255, cv2.THRESH_BINARY)
+
+            # Convert Image To Text
+            raw_text = pytesseract.image_to_string(threshold)
+            date_v, time_v, latitude_v, longitude_v, speed_v = clean_text(raw_text)
+
+            # Display Information
+            print("Frame: {}, Date: {}, Time: {}, Latitude: {}, Longitude: {}, Speed: {}".format(
+                counter, date_v, time_v, latitude_v, longitude_v, speed_v))
+
+        # Raise KeyboardInterrupt Exit Program
+        except(KeyboardInterrupt, SystemExit):
+            cap.release()
+            cv2.destroyAllWindows()
+            break
+
+        # Add To Frame Counter
+        counter += 1
+
+        if (cv2.waitKey(1) & 0xFF == ord('q')) or (ret == False):
+            cap.release()
+            cv2.destroyAllWindows()
+            break
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
 
     # Import The Dashcam Video Into OpenCV
-    in_path = r"C:\Users\renac\Desktop\Dashcam\Video_1.mp4"
+    in_path = "/Users/renacinmatadeen/Desktop/V1.mp4"
 
     # Process Video
     process_video(in_path)
