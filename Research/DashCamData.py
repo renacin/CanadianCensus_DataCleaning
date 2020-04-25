@@ -4,11 +4,12 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 import cv2
+import pandas as pd
 import pytesseract
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-# Secondary Function, Clean Text Object Orientation Helps With Possible Frame Skipping Implementation
+# Secondary Function, Clean Text Object Orientation
 def clean_text(in_text):
 
     try:
@@ -21,12 +22,16 @@ def clean_text(in_text):
         longitude_ = float(raw_text[6].replace("N", ""))
         speed_ = float(raw_text[7])
 
+        # Final Error Check
+        if (speed_ > 200):
+            raise ValueError
+
     except:
-        date_ = "Error"
-        time_ = "Error"
-        latitude_ = "Error"
-        longitude_ = "Error"
-        speed_ = "Error"
+        date_ = "Nan"
+        time_ = "Nan"
+        latitude_ = "Nan"
+        longitude_ = "Nan"
+        speed_ = "Nan"
 
     return date_, time_, latitude_, longitude_, speed_
 
@@ -34,13 +39,17 @@ def clean_text(in_text):
 # Main Function, Process Each Frame And Gather Data
 def process_video(video_path):
 
+    # Use Dictionary As Storage Methodology For Data | Convert To Pandas Df & CSV After
+    data_dictionary = {'Frame': [], 'Date': [], 'Time': [],
+                       'Latitude': [], 'Longitude': [], 'Speed': []}
+
     # Import Video
     cap = cv2.VideoCapture(video_path)
     ret, frame = cap.read()
 
     # Loop Through Each Frame
     counter = 1
-    while True:
+    for x in range(300):
 
         # Try To Gather Data From Frames
         try:
@@ -57,9 +66,18 @@ def process_video(video_path):
             raw_text = pytesseract.image_to_string(threshold)
             date_v, time_v, latitude_v, longitude_v, speed_v = clean_text(raw_text)
 
+            # Append Information To Data_Dictionary
+            data_dictionary['Frame'].append(counter)
+            data_dictionary['Date'].append(date_v)
+            data_dictionary['Time'].append(time_v)
+            data_dictionary['Latitude'].append(latitude_v)
+            data_dictionary['Longitude'].append(longitude_v)
+            data_dictionary['Speed'].append(speed_v)
+
             # Display Information
-            print("Frame: {}, Date: {}, Time: {}, Latitude: {}, Longitude: {}, Speed: {}".format(
-                counter, date_v, time_v, latitude_v, longitude_v, speed_v))
+            if (counter % 30 == 0):
+                print("Frame: {}, Date: {}, Time: {}, Latitude: {}, Longitude: {}, Speed: {}".format(
+                    counter, date_v, time_v, latitude_v, longitude_v, speed_v))
 
         # Raise KeyboardInterrupt Exit Program
         except(KeyboardInterrupt, SystemExit):
@@ -74,6 +92,11 @@ def process_video(video_path):
             cap.release()
             cv2.destroyAllWindows()
             break
+
+    # Write Data To CSV
+    df = pd.DataFrame.from_dict(data_dictionary)
+    df.to_csv("/Users/renacinmatadeen/Desktop/DashcamDataParse.csv", index=False)
+    print("Progress: Data Parsed & Written")
 
 
 # ----------------------------------------------------------------------------------------------------------------------
