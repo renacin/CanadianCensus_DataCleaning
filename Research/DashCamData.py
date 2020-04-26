@@ -50,52 +50,51 @@ def process_video(video_path):
     # Loop Through Each Frame
     counter = 1
     while True:
+        # Initialize Individual Frame
+        ret, frame = cap.read()
 
         # Try To Gather Data From Frames
-        try:
-            # Initialize Individual Frame
-            ret, frame = cap.read()
+        if (counter > 18029):
+            try:
+                # Convert To GrayScale | Grab Subsection
+                frame_subsection = frame[1025:1075, 15:1150, 1]
 
-            # Convert To GrayScale | Grab Subsection
-            frame_subsection = frame[1025:1075, 15:1150, 1]
+                # Apply Threshold Function
+                retval, threshold = cv2.threshold(frame_subsection, 180, 255, cv2.THRESH_BINARY)
 
-            # Apply Threshold Function
-            retval, threshold = cv2.threshold(frame_subsection, 180, 255, cv2.THRESH_BINARY)
+                # Convert Image To Text
+                raw_text = pytesseract.image_to_string(threshold)
+                date_v, time_v, latitude_v, longitude_v, speed_v = clean_text(raw_text)
 
-            # Convert Image To Text
-            raw_text = pytesseract.image_to_string(threshold)
-            date_v, time_v, latitude_v, longitude_v, speed_v = clean_text(raw_text)
+                # Append Information To Data_Dictionary
+                data_dictionary['Frame'].append(counter)
+                data_dictionary['Date'].append(date_v)
+                data_dictionary['Time'].append(time_v)
+                data_dictionary['Latitude'].append(latitude_v)
+                data_dictionary['Longitude'].append(longitude_v)
+                data_dictionary['Speed'].append(speed_v)
 
-            # Append Information To Data_Dictionary
-            data_dictionary['Frame'].append(counter)
-            data_dictionary['Date'].append(date_v)
-            data_dictionary['Time'].append(time_v)
-            data_dictionary['Latitude'].append(latitude_v)
-            data_dictionary['Longitude'].append(longitude_v)
-            data_dictionary['Speed'].append(speed_v)
+                # Display Information
+                print("Frame: {}, Date: {}, Time: {}, Latitude: {}, Longitude: {}, Speed: {}".format(
+                    counter, date_v, time_v, latitude_v, longitude_v, speed_v))
 
-            # Display Information
-            print("Frame: {}, Date: {}, Time: {}, Latitude: {}, Longitude: {}, Speed: {}".format(
-                counter, date_v, time_v, latitude_v, longitude_v, speed_v))
+            # Raise KeyboardInterrupt Exit Program
+            except(KeyboardInterrupt, SystemExit):
+                cap.release()
+                cv2.destroyAllWindows()
+                break
 
-        # Raise KeyboardInterrupt Exit Program
-        except(KeyboardInterrupt, SystemExit):
-            cap.release()
-            cv2.destroyAllWindows()
-            break
+        # Print Every 1000th line up to
+        if (counter % 1000 == 0) and (counter < 18029):
+            print("Frame: {}".format(counter))
 
         # Add To Frame Counter
         counter += 1
 
-        if (cv2.waitKey(1) & 0xFF == ord('q')) or (ret == False):
-            cap.release()
-            cv2.destroyAllWindows()
-            break
-
-    # Write Data To CSV
-    df = pd.DataFrame.from_dict(data_dictionary)
-    df.to_csv("/Users/renacinmatadeen/Desktop/DashcamDataParse.csv", index=False)
-    print("Progress: Data Parsed & Written")
+    # # Write Data To CSV
+    # df = pd.DataFrame.from_dict(data_dictionary)
+    # df.to_csv("/Users/renacinmatadeen/Desktop/DashcamDataParse.csv", index=False)
+    # print("Progress: Data Parsed & Written")
 
 
 # ----------------------------------------------------------------------------------------------------------------------
