@@ -5,6 +5,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 import cv2
 import pandas as pd
+import time
 import pytesseract
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -47,54 +48,52 @@ def process_video(video_path):
     cap = cv2.VideoCapture(video_path)
     ret, frame = cap.read()
 
+    # Get Number Of Frames In Video
+    num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
     # Loop Through Each Frame
-    counter = 1
-    while True:
+    for frame_num in range(num_frames - 1):
+
         # Initialize Individual Frame
         ret, frame = cap.read()
 
         # Try To Gather Data From Frames
-        if (counter > 18029):
-            try:
-                # Convert To GrayScale | Grab Subsection
-                frame_subsection = frame[1025:1075, 15:1150, 1]
+        try:
 
-                # Apply Threshold Function
-                retval, threshold = cv2.threshold(frame_subsection, 180, 255, cv2.THRESH_BINARY)
+            # Convert To GrayScale | Grab Subsection
+            frame_subsection = frame[1025:1075, 15:1150, 1]
 
-                # Convert Image To Text
-                raw_text = pytesseract.image_to_string(threshold)
-                date_v, time_v, latitude_v, longitude_v, speed_v = clean_text(raw_text)
+            # Apply Threshold Function
+            retval, threshold = cv2.threshold(frame_subsection, 180, 255, cv2.THRESH_BINARY)
 
-                # Append Information To Data_Dictionary
-                data_dictionary['Frame'].append(counter)
-                data_dictionary['Date'].append(date_v)
-                data_dictionary['Time'].append(time_v)
-                data_dictionary['Latitude'].append(latitude_v)
-                data_dictionary['Longitude'].append(longitude_v)
-                data_dictionary['Speed'].append(speed_v)
+            # Convert Image To Text
+            raw_text = pytesseract.image_to_string(threshold)
+            date_v, time_v, latitude_v, longitude_v, speed_v = clean_text(raw_text)
 
-                # Display Information
-                print("Frame: {}, Date: {}, Time: {}, Latitude: {}, Longitude: {}, Speed: {}".format(
-                    counter, date_v, time_v, latitude_v, longitude_v, speed_v))
+            # Append Information To Data_Dictionary
+            data_dictionary['Frame'].append((frame_num + 1))
+            data_dictionary['Date'].append(date_v)
+            data_dictionary['Time'].append(time_v)
+            data_dictionary['Latitude'].append(latitude_v)
+            data_dictionary['Longitude'].append(longitude_v)
+            data_dictionary['Speed'].append(speed_v)
 
-            # Raise KeyboardInterrupt Exit Program
-            except(KeyboardInterrupt, SystemExit):
-                cap.release()
-                cv2.destroyAllWindows()
-                break
+            # Display Information
+            if ((frame_num + 1) % 30 == 0):
+                progress = round(((frame_num / num_frames) * 100), 2)
+                print("Frame: {}, Progress: {}%, Date: {}, Time: {}, Latitude: {}, Longitude: {}, Speed: {}".format(
+                    (frame_num + 1), progress, date_v, time_v, latitude_v, longitude_v, speed_v))
 
-        # Print Every 1000th line up to
-        if (counter % 1000 == 0) and (counter < 18029):
-            print("Frame: {}".format(counter))
+        # Raise KeyboardInterrupt Exit Program
+        except(KeyboardInterrupt, SystemExit):
+            cap.release()
+            cv2.destroyAllWindows()
+            break
 
-        # Add To Frame Counter
-        counter += 1
-
-    # # Write Data To CSV
-    # df = pd.DataFrame.from_dict(data_dictionary)
-    # df.to_csv("/Users/renacinmatadeen/Desktop/DashcamDataParse.csv", index=False)
-    # print("Progress: Data Parsed & Written")
+    # Write Data To CSV
+    df = pd.DataFrame.from_dict(data_dictionary)
+    df.to_csv("/Users/renacinmatadeen/Desktop/DashcamDataParse.csv", index=False)
+    print("Progress: Data Parsed & Written")
 
 
 # ----------------------------------------------------------------------------------------------------------------------
