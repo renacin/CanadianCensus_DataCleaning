@@ -19,8 +19,9 @@ def clean_text(in_text):
         # Pull & Clean Inputs
         date_ = raw_text[0]
         time_ = raw_text[1]
-        latitude_ = float(raw_text[5].replace("W", ""))
-        longitude_ = float(raw_text[6].replace("N", ""))
+        longitude_ = float(raw_text[5].replace("W", ""))
+        latitude_ = float(raw_text[6].replace("N", ""))
+        latitude_ = latitude_ * -1
         speed_ = float(raw_text[7])
 
         # Final Error Check
