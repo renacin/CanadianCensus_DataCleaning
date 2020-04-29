@@ -5,102 +5,111 @@
 # ----------------------------------------------------------------------------------------------------------------------
 import cv2
 import pandas as pd
+import os
+import shutil
 import pytesseract
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-# Secondary Function, Clean Text Object Orientation
-def clean_text(in_text):
+# Tertiary Function, Used In Secondary Function
+def process_image(img):
 
+    # Convert To GrayScale | Grab Subsection
+    frame_subsection = img[1025:1075, 15:1150, 1]
+
+    # Apply Threshold Function
+    retval, threshold = cv2.threshold(frame_subsection, 180, 255, cv2.THRESH_BINARY)
+
+    # Return Simplified Image
+    return threshold
+
+
+# Secondary Function, Iterate Through Each Frame & Process Every 30th Frame
+def write_cleaned_frames(in_video_path, in_path):
+
+    # Make Sure The Folder Where Data If being Written To Is Empty
     try:
-        raw_text = in_text.split(" ")
+        shutil.rmtree(in_path, ignore_errors=True)
+        os.mkdir(in_path)
 
-        # Pull & Clean Inputs
-        date_ = raw_text[0]
-        time_ = raw_text[1]
-        longitude_ = float(raw_text[5].replace("W", ""))
-        latitude_ = float(raw_text[6].replace("N", ""))
-        latitude_ = latitude_ * -1
-        speed_ = float(raw_text[7])
+    except(FileNotFoundError):
+        os.mkdir(in_path)
 
-        # Final Error Check
-        if (speed_ > 200):
-            raise ValueError
-
-    except:
-        date_ = "Nan"
-        time_ = "Nan"
-        latitude_ = "Nan"
-        longitude_ = "Nan"
-        speed_ = "Nan"
-
-    return date_, time_, latitude_, longitude_, speed_
-
-
-# Main Function, Process Each Frame And Gather Data
-def process_video(video_path):
-
-    # Use Dictionary As Storage Methodology For Data | Convert To Pandas Df & CSV After
-    data_dictionary = {'Frame': [], 'Date': [], 'Time': [],
-                       'Latitude': [], 'Longitude': [], 'Speed': []}
-
-    # Import Video
-    cap = cv2.VideoCapture(video_path)
-    ret, frame = cap.read()
-
-    # Get Number Of Frames In Video
-    num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-    # Loop Through Each Frame
-    for frame_num in range(num_frames - 1):
-
-        # Initialize Individual Frame
+    # Try Main Parse
+    try:
+        # Instantiate Video File
+        cap = cv2.VideoCapture(in_video_path)
         ret, frame = cap.read()
 
-        # Try To Gather Data From Frames
-        try:
+        # Get Number Of Frames In Video | Loop Through Each
+        num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-            # Convert To GrayScale | Grab Subsection
-            frame_subsection = frame[1025:1075, 15:1150, 1]
+        # Loop Through Each Frame
+        for frame_num in range(num_frames):
 
-            # Apply Threshold Function
-            retval, threshold = cv2.threshold(frame_subsection, 180, 255, cv2.THRESH_BINARY)
+            # Process Image
+            ret, frame = cap.read()
+            image_ = process_image(frame)
 
-            # Convert Image To Text
-            raw_text = pytesseract.image_to_string(threshold)
-            date_v, time_v, latitude_v, longitude_v, speed_v = clean_text(raw_text)
+            image_write_path = "{}/Image_{}.jpeg".format(in_path, frame_num + 1)
+            cv2.imwrite(image_write_path, image_, [int(cv2.IMWRITE_JPEG_QUALITY), 15])
 
-            # Append Information To Data_Dictionary
-            data_dictionary['Frame'].append((frame_num + 1))
-            data_dictionary['Date'].append(date_v)
-            data_dictionary['Time'].append(time_v)
-            data_dictionary['Latitude'].append(latitude_v)
-            data_dictionary['Longitude'].append(longitude_v)
-            data_dictionary['Speed'].append(speed_v)
+            if (frame_num != 0) and (frame_num % 1000 == 0) or (frame_num / num_frames == 1):
+                percent_prog = (frame_num/num_frames) * 100
+                progress_ = round(percent_prog, 2)
+                print("Progress Writing Frames: {}%, Frames Written: {}/{}".format(progress_,
+                                                                                   frame_num, num_frames))
 
-            # Display Information
-            if ((frame_num + 1) % 30 == 0):
-                progress = round(((frame_num / num_frames) * 100), 2)
-                print("Frame: {}, Progress: {}%, Date: {}, Time: {}, Latitude: {}, Longitude: {}, Speed: {}".format(
-                    (frame_num + 1), progress, date_v, time_v, latitude_v, longitude_v, speed_v))
+            # Raise KeyboardInterrupt Exit Program
+    except(KeyboardInterrupt, SystemExit):
+        cap.release()
+        cv2.destroyAllWindows()
 
-        # Raise KeyboardInterrupt Exit Program
-        except(KeyboardInterrupt, SystemExit):
-            cap.release()
-            cv2.destroyAllWindows()
-            break
+    # Raise KeyboardInterrupt Exit Program
+    except:
+        cap.release()
+        cv2.destroyAllWindows()
 
-    # Write Data To CSV
-    df = pd.DataFrame.from_dict(data_dictionary)
-    df.to_csv("/Users/renacinmatadeen/Desktop/DashcamDataParse.csv", index=False)
-    print("Progress: Data Parsed & Written")
+
+def keep_first_frame(in_video_path, in_path):
+
+    # Instantiate Video From Path
+    cap = cv2.VideoCapture(in_video_path)
+
+    # Grab Number Of Frames, and Frame Rate Of Video
+    num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    num_fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+    # Loop Through Files In Directory Remove Images Redundant Images
+    for filename in os.listdir(in_path):
+        image_frame_num = int(filename[6:-5])
+
+        if (filename.endswith(".jpeg")) and (image_frame_num % 30 == 0):
+            pass
+        else:
+            os.remove(in_path + "/" + filename)
+
+    print("Images Deleted")
+
+
+# This Is The Main Function
+def main():
+
+    # Import The Dashcam Video Into OpenCV
+    in_video_path = "/Users/renacinmatadeen/Desktop/Dashcam/RawVideo/V1.mp4"
+    in_path = "/Users/renacinmatadeen/Desktop/Dashcam/IndividualFrames"
+
+    # Process Video
+    # write_cleaned_frames(in_video_path, in_path)
+
+    # Keep Only 1st Frame Of 30 FPS
+    keep_first_frame(in_video_path, in_path)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+
+# Entry Point For Main Program
 if __name__ == "__main__":
 
-    # Import The Dashcam Video Into OpenCV
-    in_path = "/Users/renacinmatadeen/Desktop/V1.mp4"
-
-    # Process Video
-    process_video(in_path)
+    # Run Main Program
+    main()
