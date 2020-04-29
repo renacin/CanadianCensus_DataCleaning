@@ -82,9 +82,11 @@ def keep_first_frame(in_video_path, in_path):
 
     # Loop Through Files In Directory Remove Images Redundant Images
     for filename in os.listdir(in_path):
+
+        # Each Image Had A Frame Number Attached, Look At That. Be Careful In The Future Through
         image_frame_num = int(filename[6:-5])
 
-        if (filename.endswith(".jpeg")) and (image_frame_num % 30 == 0):
+        if (filename.endswith(".jpeg")) and (image_frame_num % num_fps == 0):
             pass
         else:
             os.remove(in_path + "/" + filename)
