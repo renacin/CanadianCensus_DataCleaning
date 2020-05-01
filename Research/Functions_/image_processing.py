@@ -23,15 +23,15 @@ def process_image(img):
 
 
 # Secondary Function, Iterate Through Each Frame
-def write_cleaned_frames(in_video_path, in_path):
+def write_cleaned_frames(in_video_path, new_temp_folder):
 
     # Make Sure The Folder Where Data If being Written To Is Empty
     try:
-        shutil.rmtree(in_path, ignore_errors=True)
-        os.mkdir(in_path)
+        shutil.rmtree(new_temp_folder, ignore_errors=True)
+        os.mkdir(new_temp_folder)
 
     except(FileNotFoundError):
-        os.mkdir(in_path)
+        os.mkdir(new_temp_folder)
 
     # Try Main Parse
     try:
@@ -49,7 +49,7 @@ def write_cleaned_frames(in_video_path, in_path):
             ret, frame = cap.read()
             image_ = process_image(frame)
 
-            image_write_path = "{}/Image_{}.jpeg".format(in_path, frame_num + 1)
+            image_write_path = "{}/Image_{}.jpeg".format(new_temp_folder, frame_num + 1)
             cv2.imwrite(image_write_path, image_, [int(cv2.IMWRITE_JPEG_QUALITY), 15])
 
             if (frame_num != 0) and (frame_num % 1000 == 0) or (frame_num / num_frames == 1):
@@ -70,7 +70,7 @@ def write_cleaned_frames(in_video_path, in_path):
 
 
 # Secondary Function, Iterate Through Each Frame Keep Only The FPSth Frame
-def keep_first_frame(in_video_path, in_path):
+def keep_first_frame(in_video_path, new_temp_folder):
 
     # Instantiate Video From Path
     cap = cv2.VideoCapture(in_video_path)
@@ -80,7 +80,7 @@ def keep_first_frame(in_video_path, in_path):
     num_fps = int(cap.get(cv2.CAP_PROP_FPS))
 
     # Loop Through Files In Directory Remove Images Redundant Images
-    for filename in os.listdir(in_path):
+    for filename in os.listdir(new_temp_folder):
 
         # Each Image Had A Frame Number Attached, Look At That. Be Careful In The Future Through
         image_frame_num = int(filename[6:-5])
@@ -89,7 +89,7 @@ def keep_first_frame(in_video_path, in_path):
             pass
         else:
             try:
-                os.remove(in_path + "/" + filename)
+                os.remove(new_temp_folder + "/" + filename)
             except:
                 pass
 

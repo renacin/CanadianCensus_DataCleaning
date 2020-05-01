@@ -45,10 +45,10 @@ def clean_text(in_text):
 
 
 # Main Function, Process Each Frame And Gather Data
-def process_video(in_path):
+def process_video(new_temp_folder):
 
     # Get The Frame Numbers In The Folder | Number Of Frames | Equal Size Of Chunk
-    list_of_frames_num = [int(filename[6:-5]) for filename in os.listdir(in_path)]
+    list_of_frames_num = [int(filename[6:-5]) for filename in os.listdir(new_temp_folder)]
     list_of_frames_num_sorted = sorted(list_of_frames_num)
     num_images = len(list_of_frames_num_sorted)
     chunk_size = int(num_images/os.cpu_count())
