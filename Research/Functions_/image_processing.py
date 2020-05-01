@@ -43,7 +43,7 @@ def write_cleaned_frames(in_video_path, new_temp_folder):
         num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         # Loop Through Each Frame
-        for frame_num in range(num_frames):
+        for frame_num in range(500):  # Number Of Frames
 
             # Process Image
             ret, frame = cap.read()
@@ -52,13 +52,15 @@ def write_cleaned_frames(in_video_path, new_temp_folder):
             image_write_path = "{}/Image_{}.jpeg".format(new_temp_folder, frame_num + 1)
             cv2.imwrite(image_write_path, image_, [int(cv2.IMWRITE_JPEG_QUALITY), 15])
 
-            if (frame_num != 0) and (frame_num % 1000 == 0) or (frame_num / num_frames == 1):
+            if (frame_num != 0) and (frame_num % 3000 == 0) or (frame_num / num_frames == 1):
                 percent_prog = (frame_num/num_frames) * 100
                 progress_ = round(percent_prog, 2)
                 print("Progress Writing Frames: {}%, Frames Written: {}/{}".format(progress_,
                                                                                    frame_num, num_frames))
 
-            # Raise KeyboardInterrupt Exit Program
+        print("Step #2: Frames Separated - 🎞️")
+
+    # Raise KeyboardInterrupt Exit Program
     except(KeyboardInterrupt, SystemExit):
         cap.release()
         cv2.destroyAllWindows()
@@ -93,4 +95,4 @@ def keep_first_frame(in_video_path, new_temp_folder):
             except:
                 pass
 
-    print("Images Deleted")
+    print("Step #3: Unneeded Frames Deleted - 📂")

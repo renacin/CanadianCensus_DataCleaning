@@ -3,10 +3,11 @@
 # Title                                            Open CV Research
 #
 # ----------------------------------------------------------------------------------------------------------------------
-import cv2
-import pandas as pd
 import os
+import cv2
+import math
 import pytesseract
+import pandas as pd
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -51,14 +52,13 @@ def process_video(new_temp_folder):
     list_of_frames_num = [int(filename[6:-5]) for filename in os.listdir(new_temp_folder)]
     list_of_frames_num_sorted = sorted(list_of_frames_num)
     num_images = len(list_of_frames_num_sorted)
-    chunk_size = int(num_images/os.cpu_count())
+    chunk_size = math.ceil(num_images/os.cpu_count())
 
     # Seperate List By Number Of CPU Cores
     lists_of_indices = chunks(list_of_frames_num_sorted, chunk_size)
 
     for indice_list in lists_of_indices:
         print(indice_list)
-        print("\n")
 
     # # Use Dictionary As Storage Methodology For Data | Convert To Pandas Df & CSV After
     # data_dictionary = {'Frame_Num': [], 'Date': [], 'Time': [],

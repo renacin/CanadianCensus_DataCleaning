@@ -17,7 +17,14 @@ def create_folder(in_video_path):
 
     # Make New Folder To Store Data | TEMP
     newfolder_path = folder_path + "_TEMP_FLDR_DNT_RMV_"
-    os.mkdir(newfolder_path)
+
+    try:
+        os.mkdir(newfolder_path)
+
+    except FileExistsError:
+        pass
+
+    print("Step #1: Folder Created - 📁")
 
     return newfolder_path
 

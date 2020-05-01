@@ -27,8 +27,8 @@ def main_process():
     # Process Images And Write Data To CSV
     process_video(new_temp_folder)
 
-    # Delete Folder With Temp Images
-    delete_folder(new_temp_folder)
+    # # Delete Folder With Temp Images
+    # delete_folder(new_temp_folder)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
