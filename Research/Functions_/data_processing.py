@@ -63,7 +63,7 @@ def calc_indices_per_core(new_temp_folder):
 
 
 # Process Each Frame Per Indices List
-def process_frames(new_temp_folder, focus_frames, processor_id):
+def process_frames(new_temp_folder, focus_frames, processor_id, return_data):
 
     # Use Dictionary As Storage Methodology For Data | Convert To Pandas Df & CSV After
     data_dictionary = {'Frame_Num': [], 'Date': [], 'Time': [],
@@ -73,16 +73,16 @@ def process_frames(new_temp_folder, focus_frames, processor_id):
 
     # Loop Through Each Frame In Focus_Frames List
     for frame_number in focus_frames:
-        image_path = processed_images_path + str(frame_number) + ".jpeg"
 
-        # Import Image
-        im = cv2.imread(image_path)
-
-        # Frame Number
-        image_frame_num = int(frame_number)
-
-        # Gather Data From Frames
         try:
+            image_path = processed_images_path + str(frame_number) + ".jpeg"
+
+            # Import Image
+            im = cv2.imread(image_path)
+
+            # Frame Number
+            image_frame_num = int(frame_number)
+
             # Convert Image To Text
             raw_text = pytesseract.image_to_string(im)
 
@@ -97,22 +97,19 @@ def process_frames(new_temp_folder, focus_frames, processor_id):
             data_dictionary['Longitude'].append(longitude_v)
             data_dictionary['Speed'].append(speed_v)
 
-            print("Frame Num: {}, Date: {}, Time: {}, Latitude: {}, Longitude: {}, Speed: {}".format(
-                image_frame_num, date_v, time_v, latitude_v, longitude_v, speed_v))
-
-        # Raise KeyboardInterrupt Exit Program
-        except(KeyboardInterrupt, SystemExit):
+            # Raise KeyboardInterrupt Exit Program
+        except (KeyboardInterrupt, SystemExit) as e:
             break
 
-    # # Write Data To CSV
-    # df = pd.DataFrame.from_dict(data_dictionary)
-    # df.to_csv("/Users/renacinmatadeen/Desktop/DashcamDataParse.csv", index=False)
-    # print("Progress: Data Parsed & Written")
-
-    # Main Function, Process Each Frame And Gather Data | Per Core
+    # Write Data To Main Data Storage Unit
+    return_data["Processor" + str(processor_id)] = data_dictionary
 
 
 def process_frames_multiprocessing(new_temp_folder):
+
+    # Manager Will Help Store Data Created By Workers
+    manager = multiprocessing.Manager()
+    return_data = manager.dict()
 
     # List Of Dif Indices
     multiple_chunks_list = calc_indices_per_core(new_temp_folder)
@@ -125,7 +122,7 @@ def process_frames_multiprocessing(new_temp_folder):
 
         # Utilize Multiprocessing To Process Frames To Data
         processes.append(multiprocessing.Process(target=process_frames,
-                                                 args=(new_temp_folder, chunk_index, i + 1,)))
+                                                 args=(new_temp_folder, chunk_index, i + 1, return_data,)))
 
     # Start Processes
     for process in processes:
@@ -134,3 +131,6 @@ def process_frames_multiprocessing(new_temp_folder):
     # Make Sure Processes Completes Before Moving On
     for process in processes:
         process.join()
+
+    # Print Data Stored By Processors
+    print(return_data.values())
