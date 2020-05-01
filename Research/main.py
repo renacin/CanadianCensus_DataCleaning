@@ -25,7 +25,7 @@ def main_process():
     keep_first_frame(in_video_path, new_temp_folder)
 
     # Process Images And Write Data To CSV
-    process_video(new_temp_folder)
+    process_frames_multiprocessing(new_temp_folder)
 
     # # Delete Folder With Temp Images
     # delete_folder(new_temp_folder)

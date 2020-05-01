@@ -8,6 +8,7 @@ import cv2
 import math
 import pytesseract
 import pandas as pd
+import multiprocessing
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -45,8 +46,8 @@ def clean_text(in_text):
     return date_, time_, latitude_, longitude_, speed_
 
 
-# Main Function, Process Each Frame And Gather Data
-def process_video(new_temp_folder):
+# Secondary Function, Create List Of Indices For Each Core/Process
+def calc_indices_per_core(new_temp_folder):
 
     # Get The Frame Numbers In The Folder | Number Of Frames | Equal Size Of Chunk
     list_of_frames_num = [int(filename[6:-5]) for filename in os.listdir(new_temp_folder)]
@@ -57,48 +58,79 @@ def process_video(new_temp_folder):
     # Seperate List By Number Of CPU Cores
     lists_of_indices = chunks(list_of_frames_num_sorted, chunk_size)
 
-    for indice_list in lists_of_indices:
-        print(indice_list)
+    # Return List Of Indices
+    return lists_of_indices
 
-    # # Use Dictionary As Storage Methodology For Data | Convert To Pandas Df & CSV After
-    # data_dictionary = {'Frame_Num': [], 'Date': [], 'Time': [],
-    #                    'Latitude': [], 'Longitude': [], 'Speed': []}
-    #
-    # # Loop Through Each Frame
-    # for filename in os.listdir(in_path):
-    #
-    #     # Import Image
-    #     im = cv2.imread(in_path + "/" + filename)
-    #
-    #     # Frame Number
-    #     image_frame_num = int(filename[6:-5])
-    #
-    #     # Gather Data From Frames
-    #     try:
-    #         # Convert Image To Text
-    #         raw_text = pytesseract.image_to_string(im)
-    #
-    #         # Pull Information
-    #         date_v, time_v, latitude_v, longitude_v, speed_v = clean_text(raw_text)
-    #
-    #         # Append Information To Data_Dictionary
-    #         data_dictionary['Frame_Num'].append(image_frame_num)
-    #         data_dictionary['Date'].append(date_v)
-    #         data_dictionary['Time'].append(time_v)
-    #         data_dictionary['Latitude'].append(latitude_v)
-    #         data_dictionary['Longitude'].append(longitude_v)
-    #         data_dictionary['Speed'].append(speed_v)
-    #
-    #         print("Frame Num: {}, Date: {}, Time: {}, Latitude: {}, Longitude: {}, Speed: {}".format(
-    #             image_frame_num, date_v, time_v, latitude_v, longitude_v, speed_v))
-    #
-    #     # Raise KeyboardInterrupt Exit Program
-    #     except(KeyboardInterrupt, SystemExit):
-    #         break
-    #
+
+# Process Each Frame Per Indices List
+def process_frames(new_temp_folder, focus_frames, processor_id):
+
+    # Use Dictionary As Storage Methodology For Data | Convert To Pandas Df & CSV After
+    data_dictionary = {'Frame_Num': [], 'Date': [], 'Time': [],
+                       'Latitude': [], 'Longitude': [], 'Speed': []}
+
+    processed_images_path = new_temp_folder + "/Image_"
+
+    # Loop Through Each Frame In Focus_Frames List
+    for frame_number in focus_frames:
+        image_path = processed_images_path + str(frame_number) + ".jpeg"
+
+        # Import Image
+        im = cv2.imread(image_path)
+
+        # Frame Number
+        image_frame_num = int(frame_number)
+
+        # Gather Data From Frames
+        try:
+            # Convert Image To Text
+            raw_text = pytesseract.image_to_string(im)
+
+            # Pull Information
+            date_v, time_v, latitude_v, longitude_v, speed_v = clean_text(raw_text)
+
+            # Append Information To Data_Dictionary
+            data_dictionary['Frame_Num'].append(image_frame_num)
+            data_dictionary['Date'].append(date_v)
+            data_dictionary['Time'].append(time_v)
+            data_dictionary['Latitude'].append(latitude_v)
+            data_dictionary['Longitude'].append(longitude_v)
+            data_dictionary['Speed'].append(speed_v)
+
+            print("Frame Num: {}, Date: {}, Time: {}, Latitude: {}, Longitude: {}, Speed: {}".format(
+                image_frame_num, date_v, time_v, latitude_v, longitude_v, speed_v))
+
+        # Raise KeyboardInterrupt Exit Program
+        except(KeyboardInterrupt, SystemExit):
+            break
+
     # # Write Data To CSV
     # df = pd.DataFrame.from_dict(data_dictionary)
     # df.to_csv("/Users/renacinmatadeen/Desktop/DashcamDataParse.csv", index=False)
     # print("Progress: Data Parsed & Written")
 
-    # CREATE A FUNCTION THAT IMPLEMENTS MULTIPROCESSING,
+    # Main Function, Process Each Frame And Gather Data | Per Core
+
+
+def process_frames_multiprocessing(new_temp_folder):
+
+    # List Of Dif Indices
+    multiple_chunks_list = calc_indices_per_core(new_temp_folder)
+
+    # Store The Processes In A List | Easier To Iterate
+    processes = []
+
+    # Register Processes | Match Number Of CPU Cores
+    for i, chunk_index in enumerate(multiple_chunks_list):
+
+        # Utilize Multiprocessing To Process Frames To Data
+        processes.append(multiprocessing.Process(target=process_frames,
+                                                 args=(new_temp_folder, chunk_index, i + 1,)))
+
+    # Start Processes
+    for process in processes:
+        process.start()
+
+    # Make Sure Processes Completes Before Moving On
+    for process in processes:
+        process.join()
