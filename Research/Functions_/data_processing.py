@@ -105,7 +105,11 @@ def process_frames(new_temp_folder, focus_frames, processor_id, return_data):
     return_data["Processor" + str(processor_id)] = data_dictionary
 
 
-def process_frames_multiprocessing(new_temp_folder):
+def process_frames_multiprocessing(new_temp_folder, file_name):
+
+    # Create Main Data Storage Unit
+    main_data_container = {'Frame_Num': [], 'Date': [], 'Time': [],
+                           'Latitude': [], 'Longitude': [], 'Speed': []}
 
     # Manager Will Help Store Data Created By Workers
     manager = multiprocessing.Manager()
@@ -132,5 +136,24 @@ def process_frames_multiprocessing(new_temp_folder):
     for process in processes:
         process.join()
 
+    print("Step #4: Workers Finished Processing - ⛏️")
+
     # Print Data Stored By Processors
-    print(return_data.values())
+    for dataset_ in return_data.values():
+
+        # Append Data Parsed By Workers
+        main_data_container["Frame_Num"].extend(dataset_["Frame_Num"])
+        main_data_container["Date"].extend(dataset_["Date"])
+        main_data_container["Time"].extend(dataset_["Time"])
+        main_data_container["Latitude"].extend(dataset_["Latitude"])
+        main_data_container["Longitude"].extend(dataset_["Longitude"])
+        main_data_container["Speed"].extend(dataset_["Speed"])
+
+    # Create A Pandas DF | Write To Folder
+    csv_path = new_temp_folder.replace("_TEMP_FLDR_DNT_RMV_", "")
+    file_name = file_name.replace(".mp4", "")
+    new_path = csv_path + file_name + ".csv"
+
+    df = pd.DataFrame(main_data_container)
+    df.to_csv(new_path, index=False)
+    print("Step #5: Data Written - 💾")

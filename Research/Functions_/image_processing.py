@@ -43,7 +43,7 @@ def write_cleaned_frames(in_video_path, new_temp_folder):
         num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         # Loop Through Each Frame
-        for frame_num in range(500):  # Number Of Frames
+        for frame_num in range(num_frames):  # Number Of Frames
 
             # Process Image
             ret, frame = cap.read()
@@ -55,8 +55,8 @@ def write_cleaned_frames(in_video_path, new_temp_folder):
             if (frame_num != 0) and (frame_num % 3000 == 0) or (frame_num / num_frames == 1):
                 percent_prog = (frame_num/num_frames) * 100
                 progress_ = round(percent_prog, 2)
-                print("Progress Writing Frames: {}%, Frames Written: {}/{}".format(progress_,
-                                                                                   frame_num, num_frames))
+                print("         Progress Writing Frames: {}%, Frames Written: {}/{}".format(progress_,
+                                                                                            frame_num, num_frames))
 
         print("Step #2: Frames Separated - 🎞️")
 
