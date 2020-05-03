@@ -12,8 +12,9 @@ from FunctionsDir.module_check import *
 
 # This Is The Main Function
 def main_process():
+    
     # Check To See If Proper Modules Are Installed
-    mismod = module_checker()
+    module_checker()
 
     # Import The Dashcam Video Into OpenCV
     in_video_path = "/Users/renacinmatadeen/Desktop/Dashcam/RawVideo/V1.mp4"
