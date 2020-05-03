@@ -3,14 +3,17 @@
 # Title                                            Open CV Research
 #
 # ----------------------------------------------------------------------------------------------------------------------
-from Functions_.image_processing import *
-from Functions_.data_processing import *
-from Functions_.folder_manipulation import *
+from FunctionsDir.image_processing import *
+from FunctionsDir.data_processing import *
+from FunctionsDir.folder_manipulation import *
+from FunctionsDir.module_check import *
 # ----------------------------------------------------------------------------------------------------------------------
 
 
 # This Is The Main Function
 def main_process():
+    # Check To See If Proper Modules Are Installed
+    mismod = module_checker()
 
     # Import The Dashcam Video Into OpenCV
     in_video_path = "/Users/renacinmatadeen/Desktop/Dashcam/RawVideo/V1.mp4"

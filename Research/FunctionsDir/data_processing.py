@@ -27,9 +27,22 @@ def clean_text(in_text):
         # Pull & Clean Inputs
         date_ = raw_text[0]
         time_ = raw_text[1]
-        longitude_ = float(raw_text[5].replace("W", ""))
-        latitude_ = float(raw_text[6].replace("N", ""))
-        longitude_ = longitude_ * -1
+
+        # Addaptive All Lat/Long Values
+        if ("W" in raw_text[5]):
+            longitude_ = float(raw_text[5].replace("W", ""))
+            longitude_ = longitude_ * -1
+
+        elif ("E" in raw_text[5]):
+            longitude_ = float(raw_text[5].replace("E", ""))
+
+        if ("N" in raw_text[6]):
+            latitude_ = float(raw_text[6].replace("N", ""))
+
+        elif ("S" in raw_text[6]):
+            latitude_ = float(raw_text[6].replace("S", ""))
+            latitude_ = latitude_ * -1
+
         speed_ = float(raw_text[7])
 
         # Final Error Check
