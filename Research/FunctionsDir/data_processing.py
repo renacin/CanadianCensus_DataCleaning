@@ -3,12 +3,15 @@
 # Title                                            Open CV Research
 #
 # ----------------------------------------------------------------------------------------------------------------------
-import os
-import cv2
-import math
-import pytesseract
-import pandas as pd
-import multiprocessing
+try:
+    import os
+    import cv2
+    import math
+    import pytesseract
+    import pandas as pd
+    import multiprocessing
+except ImportError:
+    pass
 # ----------------------------------------------------------------------------------------------------------------------
 
 

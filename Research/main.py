@@ -3,16 +3,16 @@
 # Title                                            Open CV Research
 #
 # ----------------------------------------------------------------------------------------------------------------------
+from FunctionsDir.module_check import *
 from FunctionsDir.image_processing import *
 from FunctionsDir.data_processing import *
 from FunctionsDir.folder_manipulation import *
-from FunctionsDir.module_check import *
 # ----------------------------------------------------------------------------------------------------------------------
 
 
 # This Is The Main Function
 def main_process():
-    
+
     # Check To See If Proper Modules Are Installed
     module_checker()
 
