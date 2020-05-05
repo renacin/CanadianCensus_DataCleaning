@@ -11,13 +11,10 @@ from FunctionsDir.folder_manipulation import *
 
 
 # This Is The Main Function
-def main_process():
+def main_process(in_video_path):
 
     # Check To See If Proper Modules Are Installed
     module_checker()
-
-    # Import The Dashcam Video Into OpenCV
-    in_video_path = "/Users/renacinmatadeen/Desktop/Dashcam/RawVideo/V1.mp4"
 
     # Find Folder Where Dashcam Video Is Stored | Create A Temporary Folder For Individual Frames
     new_temp_folder, file_name = create_folder(in_video_path)
@@ -39,5 +36,8 @@ def main_process():
 # Entry Point For Main Program
 if __name__ == "__main__":
 
+    # Import The Dashcam Video Into OpenCV
+    in_video_path = "/Users/renacinmatadeen/Desktop/Dashcam/RawVideo/V1.mp4"
+
     # Run Main Program
-    main_process()
+    main_process(in_video_path)
